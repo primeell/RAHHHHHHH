@@ -1,0 +1,99 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Cpu, CheckCircle2, FileText, Activity } from 'lucide-react';
+import SpectrogramView from '../components/SpectrogramView';
+
+const LOGS = [
+    "Initializing MobileNetV2 core...",
+    "Loading quantized weights (int8)...",
+    "Allocating tensors...",
+    "Processing audio buffer (44.1kHz)...",
+    "Applying Noise Reduction DSP...",
+    "Generating Mel-Spectrogram...",
+    "Extracting MFCC features...",
+    "Running Inference...",
+    "Calculating Softmax probabilities...",
+    "Verifying confidence threshold...",
+    "Analysis Complete."
+];
+
+const Analysis = () => {
+    const navigate = useNavigate();
+    const [progress, setProgress] = useState(0);
+    const [userLogs, setUserLogs] = useState([]);
+
+    useEffect(() => {
+        // Simulation loops
+        let currentProgress = 0;
+        const progressInterval = setInterval(() => {
+            currentProgress += 1;
+            if (currentProgress > 100) {
+                currentProgress = 100;
+                clearInterval(progressInterval);
+                setTimeout(() => {
+                    // Randomly result for demo purposes (Weighted towards 'Low Risk' for typical demo)
+                    // But we can make it random or fixed. Let's make it random but mostly low.
+                    const isHighRisk = Math.random() > 0.7;
+                    navigate('/result', { state: { risk: isHighRisk ? 'High' : 'Low' } });
+                }, 1000);
+            }
+            setProgress(currentProgress);
+        }, 50); // 5 seconds total
+
+        // Log messages
+        let logIndex = 0;
+        const logInterval = setInterval(() => {
+            if (logIndex < LOGS.length) {
+                setUserLogs(prev => [...prev, LOGS[logIndex]]);
+                logIndex++;
+            } else {
+                clearInterval(logInterval);
+            }
+        }, 400);
+
+        return () => {
+            clearInterval(progressInterval);
+            clearInterval(logInterval);
+        };
+    }, [navigate]);
+
+    return (
+        <div className="min-h-screen bg-hospital-blue-950 text-white p-6 flex flex-col items-center justify-center">
+
+            <div className="mb-8 text-center animate-pulse">
+                <Cpu size={48} className="mx-auto text-medical-teal-500 mb-4" />
+                <h2 className="text-xl font-bold font-mono tracking-widest">ANALYZING</h2>
+                <p className="text-hospital-blue-400 text-xs mt-1">AI ENGINE RUNNING ON-DEVICE</p>
+            </div>
+
+            <div className="w-full max-w-sm mb-8">
+                <SpectrogramView progress={progress} />
+            </div>
+
+            <div className="w-full max-w-sm">
+                <div className="flex justify-between text-xs font-mono text-medical-teal-500 mb-1">
+                    <span>PROCESSING</span>
+                    <span>{progress}%</span>
+                </div>
+                <div className="h-1 bg-hospital-blue-900 rounded-full overflow-hidden mb-8">
+                    <div
+                        className="h-full bg-medical-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)] transition-all duration-100 ease-linear"
+                        style={{ width: `${progress}%` }}
+                    ></div>
+                </div>
+
+                <div className="bg-black/40 rounded-xl p-4 border border-hospital-blue-800 font-mono text-xs h-40 overflow-hidden flex flex-col-reverse">
+                    {userLogs.map((log, i) => (
+                        <div key={i} className="mb-1">
+                            <span className="text-hospital-blue-500 mr-2">[{new Date().toLocaleTimeString().split(' ')[0]}]</span>
+                            <span className="text-hospital-blue-100">{log}</span>
+                        </div>
+                    )).reverse()}
+                </div>
+            </div>
+
+        </div>
+    );
+};
+
+export default Analysis;
