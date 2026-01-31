@@ -107,7 +107,7 @@ const Community = () => {
                 className="fixed inset-0 w-full h-full -z-20 bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: "url('/hospital-bg.png')" }}
             />
-            <div className={`fixed inset-0 w-full h-full -z-10 ${isDarkMode ? 'bg-hospital-blue-900/90' : 'bg-hospital-blue-50/90 transition-colors duration-300'}`} />
+            <div className={`fixed inset-0 w-full h-full -z-10 transition-colors duration-300 ${isDarkMode ? 'bg-hospital-blue-900/90' : 'bg-hospital-blue-900/80'}`} />
 
             {/* Ambient Decorations */}
             <div className={`absolute top-[-10%] right-[-10%] w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse pointer-events-none transition-colors duration-700 ${isDarkMode ? 'bg-blue-600' : 'bg-cyan-400'}`}></div>
@@ -117,19 +117,19 @@ const Community = () => {
             {/* Header */}
             <div className="px-6 pt-12 pb-6 sticky top-0 z-10">
                 <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl backdrop-blur-md ${isDarkMode ? 'bg-slate-800/50' : 'bg-white/50'}`}>
-                        <Users size={28} className={isDarkMode ? 'text-blue-400' : 'text-medical-teal-600'} />
+                    <div className={`p-2 rounded-xl backdrop-blur-md ${isDarkMode ? 'bg-slate-800/50' : 'bg-white/10'}`}>
+                        <Users size={28} className={isDarkMode ? 'text-blue-400' : 'text-white'} />
                     </div>
-                    <h1 className={`text-2xl font-bold font-display ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Komunitas</h1>
+                    <h1 className="text-2xl font-bold font-display text-white">Komunitas</h1>
                 </div>
             </div>
 
             {/* Content */}
             <div className="p-6 space-y-6">
                 {/* Create Post Input */}
-                <div className={`p-4 rounded-3xl shadow-sm border backdrop-blur-xl ${isDarkMode ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-white/50'}`}>
+                <div className={`p-4 rounded-3xl shadow-sm border backdrop-blur-xl transition-colors duration-300 ${isDarkMode ? 'bg-blue-900/80 border-blue-500/30' : 'bg-hospital-blue-100/90 border-hospital-blue-200/50'}`}>
                     <div className="flex gap-3 items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isDarkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-hospital-blue-100 text-hospital-blue-600'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isDarkMode ? 'bg-blue-600/50 text-white' : 'bg-hospital-blue-200 text-hospital-blue-700'}`}>
                             <span className="font-bold">{currentUser.charAt(0)}</span>
                         </div>
                         <input
@@ -138,12 +138,12 @@ const Community = () => {
                             onChange={(e) => setNewPost(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handlePost()}
                             placeholder="Bagikan cerita kesehatanmu..."
-                            className={`flex-1 bg-transparent outline-none ${isDarkMode ? 'placeholder-slate-400 text-white' : 'placeholder-slate-500 text-hospital-blue-900'}`}
+                            className={`flex-1 bg-transparent outline-none ${isDarkMode ? 'placeholder-blue-300/50 text-white' : 'placeholder-hospital-blue-500 text-hospital-blue-900'}`}
                         />
                         <button
                             onClick={handlePost}
                             disabled={!newPost.trim()}
-                            className={`p-2 rounded-full transition-colors ${!newPost.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-hospital-blue-100/20 active:scale-95'} ${isDarkMode ? 'text-blue-400' : 'text-hospital-blue-600'}`}
+                            className={`p-2 rounded-full transition-colors ${!newPost.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-hospital-blue-500/20 active:scale-95'} ${isDarkMode ? 'text-blue-300' : 'text-hospital-blue-600'}`}
                         >
                             <Share2 className="rotate-45 relative left-[-2px]" size={20} />
                         </button>
@@ -152,10 +152,10 @@ const Community = () => {
 
                 {/* Feed */}
                 {posts.map(post => (
-                    <div key={post.id} className={`p-5 rounded-3xl shadow-sm border backdrop-blur-xl ${isDarkMode ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-white/50'}`}>
+                    <div key={post.id} className={`p-5 rounded-3xl shadow-sm border backdrop-blur-xl transition-colors duration-300 ${isDarkMode ? 'bg-blue-900/80 border-blue-500/30' : 'bg-hospital-blue-100/90 border-hospital-blue-200/50 text-hospital-blue-900'}`}>
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-hospital-blue-50 text-hospital-blue-600'}`}>
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-blue-600/50 text-white' : 'bg-hospital-blue-200 text-hospital-blue-700'}`}>
                                     {post.user.charAt(0)}
                                 </div>
                                 <div>
