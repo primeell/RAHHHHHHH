@@ -6,7 +6,36 @@ import Input from '../components/Input';
 import { useTheme } from '../context/ThemeContext';
 
 const Onboarding = () => {
-    // ... (existing code remains same)
+    const navigate = useNavigate();
+    const { isDarkMode } = useTheme();
+    const [name, setName] = useState('');
+    const [age, setAge] = useState('');
+    const [speech, setSpeech] = useState(null);
+
+    const handleBotClick = () => {
+        const facts = [
+            "Lungs float on water!",
+            "You take ~20,000 breaths a day!",
+            "Exercise strengthens your lungs.",
+            "Yawning cools your brain.",
+            "Your left lung is slightly smaller than your right to make room for your heart."
+        ];
+        const randomFact = facts[Math.floor(Math.random() * facts.length)];
+        setSpeech(randomFact);
+    };
+
+    const handleStart = (e) => {
+        e.preventDefault();
+        if (name && age) {
+            const user = { name, age, darkMode: isDarkMode, healthScore: 85 };
+            try {
+                localStorage.setItem('respi_user', JSON.stringify(user));
+            } catch (error) {
+                console.error("Failed to save user data", error);
+            }
+            navigate('/dashboard');
+        }
+    };
 
     return (
         <div className={`min-h-screen flex flex-col relative overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-hospital-blue-50'}`}>
