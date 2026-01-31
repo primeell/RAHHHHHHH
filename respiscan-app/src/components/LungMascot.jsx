@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const LungMascot = ({ darkMode }) => {
     const tips = [
-        "Inhale deeply through your nose, exhale slowly through your mouth.",
-        "Stay hydrated! Water helps thin the mucus lining your airways and lungs.",
-        "Avoid smoking and second-hand smoke to keep us pink and healthy!",
-        "Regular exercise improves your lung capacity and overall health.",
-        "Keep your indoor air clean by reducing dust and using air purifiers.",
-        "Practice diaphragmatic breathing to strengthen your breathing muscles.",
-        "Laughing is a great workout for your abdominal muscles and lungs!"
+        "Tarik napas dalam-dalam melalui hidung, hembuskan perlahan melalui mulut.",
+        "Tetap terhidrasi! Air membantu mengencerkan lendir di saluran udara dan paru-paru Anda.",
+        "Hindari merokok dan asap rokok agar paru-paru tetap sehat!",
+        "Olahraga teratur meningkatkan kapasitas paru-paru dan kesehatan secara keseluruhan.",
+        "Jaga kebersihan udara dalam ruangan dengan mengurangi debu dan ventilasi yang baik.",
+        "Latih pernapasan diafragma untuk memperkuat otot pernapasan Anda.",
+        "Tertawa adalah latihan yang bagus untuk otot perut dan paru-paru Anda!"
     ];
 
     const [currentTip, setCurrentTip] = useState(0);
@@ -45,7 +45,7 @@ const LungMascot = ({ darkMode }) => {
                 {/* Speech Bubble */}
                 <div className="flex-1 relative">
                     <div className={`p-4 rounded-2xl rounded-tl-none relative ${darkMode ? 'bg-indigo-900/50 text-indigo-100' : 'bg-indigo-50 text-indigo-800'}`}>
-                        <h4 className="font-bold text-sm mb-1">Dr. Lung says:</h4>
+                        <h4 className="font-bold text-sm mb-1">Dr. Paru berkata:</h4>
                         <AnimatePresence mode='wait'>
                             <motion.p
                                 key={currentTip}

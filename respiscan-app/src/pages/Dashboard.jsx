@@ -5,7 +5,7 @@ import { Wind, Activity, Bell, ChevronRight, Play, MapPin } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 import HealthGauge from '../components/HealthGauge';
 import SparkLine from '../components/SparkLine';
-import { getAirQualityByLocation } from '../services/airQualityService';
+import { getAirQualityByLocation, getCoordinatesByCity } from '../services/airQualityService';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
 import { useFitness } from '../context/FitnessContext';
@@ -39,13 +39,14 @@ const Dashboard = () => {
     React.useEffect(() => {
         const fetchAQI = async (lat, lon) => {
             const data = await getAirQualityByLocation(lat, lon);
-            let status = 'Good';
+            let status = 'Baik';
             let color = 'bg-green-100 text-green-700';
 
-            if (data.aqi > 50) { status = 'Moderate'; color = 'bg-yellow-100 text-yellow-700'; }
-            if (data.aqi > 100) { status = 'Unhealthy For Sensitive Groups'; color = 'bg-orange-100 text-orange-700'; }
-            if (data.aqi > 150) { status = 'Unhealthy'; color = 'bg-red-100 text-red-700'; }
-            if (data.aqi > 200) { status = 'Very Unhealthy'; color = 'bg-purple-100 text-purple-700'; }
+
+            if (data.aqi > 50) { status = 'Sedang'; color = 'bg-yellow-100 text-yellow-700'; }
+            if (data.aqi > 100) { status = 'Tidak Sehat Bagi Kelompok Sensitif'; color = 'bg-orange-100 text-orange-700'; }
+            if (data.aqi > 150) { status = 'Tidak Sehat'; color = 'bg-red-100 text-red-700'; }
+            if (data.aqi > 200) { status = 'Sangat Tidak Sehat'; color = 'bg-purple-100 text-purple-700'; }
 
             setAirQuality({
                 aqi: data.aqi,
@@ -56,15 +57,27 @@ const Dashboard = () => {
             });
         };
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => fetchAQI(position.coords.latitude, position.coords.longitude),
-                () => fetchAQI(0, 0) // Fallback (Service handles mock)
-            );
-        } else {
-            fetchAQI(0, 0);
-        }
-    }, []);
+        const initAirQuality = async () => {
+            if (user.location) {
+                const coords = await getCoordinatesByCity(user.location);
+                if (coords) {
+                    fetchAQI(coords.lat, coords.lon);
+                } else {
+                    // Fallback if city not found
+                    fetchAQI(0, 0);
+                }
+            } else if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => fetchAQI(position.coords.latitude, position.coords.longitude),
+                    () => fetchAQI(0, 0)
+                );
+            } else {
+                fetchAQI(0, 0);
+            }
+        };
+
+        initAirQuality();
+    }, [user.location]);
 
     // Mock Data
     const trendsData = [
@@ -115,14 +128,15 @@ const Dashboard = () => {
             <header className="px-6 pt-12 pb-6 flex justify-between items-center text-white">
                 <div className="flex items-center gap-4">
                     <div>
-                        <p className="text-hospital-blue-200 text-xs font-bold uppercase tracking-wider">Welcome back</p>
+                        <p className="text-hospital-blue-200 text-xs font-bold uppercase tracking-wider">Selamat Datang Kembali</p>
+
                         <h1 className="text-2xl font-bold">{user.name}</h1>
                         <div className="flex items-center gap-1 text-hospital-blue-200 text-xs mt-1 font-medium">
                             <MapPin size={12} />
-                            <span>{airQuality.city}, {airQuality.country}</span>
+                            <span>{user.location || airQuality.city}, {airQuality.country}</span>
                         </div>
                         {user.age && (
-                            <p className="text-hospital-blue-300 text-sm font-medium mt-0.5 h-0 overflow-hidden">{user.age} Years Old</p>
+                            <p className="text-hospital-blue-300 text-sm font-medium mt-0.5 h-0 overflow-hidden">{user.age} Tahun</p>
                         )}
                     </div>
                 </div>
@@ -140,13 +154,13 @@ const Dashboard = () => {
                     {/* Notification Popup */}
                     {showNotifications && (
                         <div className={`absolute right-0 top-14 w-64 rounded-xl shadow-xl p-4 z-50 border backdrop-blur-md ${isDarkMode ? 'bg-slate-800/90 border-slate-700 text-white' : 'bg-white/90 border-slate-200 text-slate-800'}`}>
-                            <h3 className="font-bold mb-2 text-sm">Notifications</h3>
+                            <h3 className="font-bold mb-2 text-sm">Notifikasi</h3>
                             <div className={`p-3 rounded-lg text-sm ${runGoalMet ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
-                                <p className="font-semibold">{runGoalMet ? 'Goal Met!' : 'Run Incomplete'}</p>
+                                <p className="font-semibold">{runGoalMet ? 'Target Tercapai!' : 'Latihan Belum Selesai'}</p>
                                 <p className="text-xs mt-1">
                                     {runGoalMet
-                                        ? "Great job! You've reached your daily run goal."
-                                        : `You have ${Math.max(0, (runTargetKm - runCurrentKm).toFixed(1))} km left to run today.`}
+                                        ? "Kerja bagus! Anda telah mencapai target lari harian Anda."
+                                        : `Anda memiliki ${Math.max(0, (runTargetKm - runCurrentKm).toFixed(1))} km lagi untuk lari hari ini.`}
                                 </p>
                             </div>
                         </div>
@@ -174,7 +188,7 @@ const Dashboard = () => {
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/20' : 'bg-hospital-blue-100 group-hover:bg-hospital-blue-200'}`}>
                                 <Play size={16} className={`ml-0.5 ${isDarkMode ? 'fill-white text-white' : 'fill-current text-hospital-blue-600'}`} />
                             </div>
-                            Start New Scan
+                            Mulai Pemindaian Baru
                         </motion.button>
                     </div>
                 </motion.div>
@@ -192,8 +206,18 @@ const Dashboard = () => {
                             </div>
                             <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Normal</span>
                         </div>
-                        <h3 className={`text-xs uppercase font-bold tracking-wider mb-1 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Resp. Rate</h3>
-                        <p className={`text-2xl font-bold mb-2 transition-colors ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>18 <span className={`text-sm font-normal ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>bpm</span></p>
+                        <h3 className={`text-xs uppercase font-bold tracking-wider mb-1 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Laju Pernapasan</h3>
+                        <div className="flex justify-between items-end mb-2">
+                            <p className={`text-2xl font-bold transition-colors ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                                {user.lastRespRate || 18} <span className={`text-sm font-normal ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>bpm</span>
+                            </p>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); navigate('/measure-breath'); }}
+                                className="text-xs bg-blue-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-blue-600 transition-colors z-10"
+                            >
+                                Measure
+                            </button>
+                        </div>
                         <SparkLine data={respRateData} color="#3b82f6" />
                     </motion.div>
 
@@ -208,7 +232,7 @@ const Dashboard = () => {
                             </div>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${airQuality.color}`}>{airQuality.status}</span>
                         </div>
-                        <h3 className={`text-xs uppercase font-bold tracking-wider mb-1 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Air Quality</h3>
+                        <h3 className={`text-xs uppercase font-bold tracking-wider mb-1 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Kualitas Udara</h3>
                         <p className={`text-2xl font-bold mb-2 transition-colors ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{airQuality.aqi} <span className={`text-sm font-normal ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>AQI</span></p>
                         <SparkLine data={aqiData} color="#a855f7" />
                     </motion.div>
@@ -226,9 +250,9 @@ const Dashboard = () => {
                     className={`rounded-3xl p-6 shadow-sm border transition-colors duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}
                 >
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className={`font-bold transition-colors ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Weekly Health Trends</h3>
+                        <h3 className={`font-bold transition-colors ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Tren Kesehatan Mingguan</h3>
                         <button className="text-xs text-hospital-blue-500 font-bold flex items-center">
-                            Details <ChevronRight size={14} />
+                            Detail <ChevronRight size={14} />
                         </button>
                     </div>
 
