@@ -50,12 +50,7 @@ const Exercise = () => {
                         Stay fit and healthy
                     </p>
                 </div>
-                <div className="relative">
-                    <button className="p-3 rounded-full bg-hospital-blue-900 text-white backdrop-blur-md border border-white/20 hover:bg-white/20 transition-colors">
-                        <Bell size={20} />
-                    </button>
-                    <span className="absolute top-0 right-0 w-3 h-3 bg-rose-500 rounded-full border-2 border-hospital-blue-900"></span>
-                </div>
+
             </header>
 
             <motion.div

@@ -17,7 +17,8 @@ const Dashboard = () => {
     const { runGoalMet, runTargetKm, runCurrentKm } = useFitness();
     const [showNotifications, setShowNotifications] = useState(false);
 
-    const [user] = useState(() => {
+    // Initial load only
+    const [user, setUser] = useState(() => {
         try {
             const saved = localStorage.getItem('respi_user');
             const initial = saved ? JSON.parse(saved) : { name: 'Guest' };

@@ -4,6 +4,7 @@ import { Activity, Mic, Home, FileText, User } from 'lucide-react';
 import { ThemeProvider } from './context/ThemeContext';
 import { FitnessProvider } from './context/FitnessContext';
 
+
 // Placeholders for pages
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));

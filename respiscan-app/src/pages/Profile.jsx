@@ -127,6 +127,8 @@ const Profile = () => {
         // Simulate API call/processing
         setTimeout(() => {
             localStorage.setItem('respi_user', JSON.stringify(formData));
+            // Dispatch event so Dashboard knows to reload immediately
+            window.dispatchEvent(new Event('user-data-updated'));
             setLoading(false);
             navigate('/dashboard');
         }, 800);

@@ -6,7 +6,8 @@ export const ThemeProvider = ({ children }) => {
     const [isDarkMode, setIsDarkMode] = useState(() => {
         try {
             const saved = localStorage.getItem('respi_user');
-            return saved ? JSON.parse(saved).darkMode : false;
+            const parsed = saved ? JSON.parse(saved) : null;
+            return (parsed && typeof parsed === 'object') ? parsed.darkMode : false;
         } catch (e) {
             console.error("Failed to parse user settings:", e);
             return false;
@@ -20,7 +21,7 @@ export const ThemeProvider = ({ children }) => {
         const saved = localStorage.getItem('respi_user');
         if (saved) {
             const parsed = JSON.parse(saved);
-            if (parsed.darkMode !== isDarkMode) {
+            if (parsed && typeof parsed === 'object' && parsed.darkMode !== isDarkMode) {
                 // If we want to persist ONLY dark mode updates from here back to the big user object:
                 const updated = { ...parsed, darkMode: isDarkMode };
                 localStorage.setItem('respi_user', JSON.stringify(updated));
