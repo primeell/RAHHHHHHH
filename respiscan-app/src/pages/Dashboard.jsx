@@ -18,9 +18,14 @@ const Dashboard = () => {
     const [showNotifications, setShowNotifications] = useState(false);
 
     const [user] = useState(() => {
-        const saved = localStorage.getItem('respi_user');
-        const initial = saved ? JSON.parse(saved) : { name: 'Guest' };
-        return { ...initial, healthScore: 85 };
+        try {
+            const saved = localStorage.getItem('respi_user');
+            const initial = saved ? JSON.parse(saved) : { name: 'Guest' };
+            return { ...initial, healthScore: 85 };
+        } catch (e) {
+            console.error("Failed to parse user data:", e);
+            return { name: 'Guest', healthScore: 85 };
+        }
     });
 
     const [airQuality, setAirQuality] = useState({

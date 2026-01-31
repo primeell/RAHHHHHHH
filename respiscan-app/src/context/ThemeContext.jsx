@@ -4,8 +4,13 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
     const [isDarkMode, setIsDarkMode] = useState(() => {
-        const saved = localStorage.getItem('respi_user');
-        return saved ? JSON.parse(saved).darkMode : false;
+        try {
+            const saved = localStorage.getItem('respi_user');
+            return saved ? JSON.parse(saved).darkMode : false;
+        } catch (e) {
+            console.error("Failed to parse user settings:", e);
+            return false;
+        }
     });
 
     useEffect(() => {

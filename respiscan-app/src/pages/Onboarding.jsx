@@ -10,24 +10,30 @@ const Onboarding = () => {
     const { isDarkMode } = useTheme();
     const [name, setName] = useState('');
     const [age, setAge] = useState('');
-    const [speech, setSpeech] = useState('');
+    const [speech, setSpeech] = useState(null);
 
     const handleBotClick = () => {
         const facts = [
             "Lungs float on water!",
-            "You take about 20,000 breaths a day.",
-            "The left lung is smaller than the right one.",
-            "Yawning helps cool your brain!"
+            "You take ~20,000 breaths a day!",
+            "Exercise strengthens your lungs.",
+            "Yawning cools your brain.",
+            "Your left lung is slightly smaller than your right to make room for your heart."
         ];
         const randomFact = facts[Math.floor(Math.random() * facts.length)];
         setSpeech(randomFact);
-        setTimeout(() => setSpeech(''), 3000);
+        setTimeout(() => setSpeech(null), 3000);
     };
 
     const handleStart = (e) => {
         e.preventDefault();
         if (name && age) {
-            localStorage.setItem('respi_user', JSON.stringify({ name, age }));
+            const user = { name, age, darkMode: isDarkMode, healthScore: 85 };
+            try {
+                localStorage.setItem('respi_user', JSON.stringify(user));
+            } catch (error) {
+                console.error("Failed to save user data", error);
+            }
             navigate('/dashboard');
         }
     };
