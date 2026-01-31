@@ -11,7 +11,7 @@ const BottomNav = () => {
 
     const navItems = [
         { icon: Home, label: 'Beranda', path: '/dashboard' },
-        { icon: Activity, label: 'Pindai', path: '/record' },
+        { icon: User, label: 'Komunitas', path: '/community' }, // Replaced Activity/Pindai
         { icon: Dumbbell, label: 'Latihan', path: '/exercise' },
         { icon: User, label: 'Profil', path: '/profile' },
     ];

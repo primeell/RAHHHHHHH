@@ -14,6 +14,7 @@ const BreathingScan = React.lazy(() => import('./pages/BreathingScan'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Exercise = React.lazy(() => import('./pages/Exercise'));
 const MotionMeasure = React.lazy(() => import('./pages/MotionMeasure'));
+const Community = React.lazy(() => import('./pages/Community'));
 const AlarmManager = React.lazy(() => import('./components/AlarmManager'));
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/exercise" element={<Exercise />} />
                 <Route path="/measure-breath" element={<MotionMeasure />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/community" element={<Community />} />
               </Routes>
               <AlarmManager />
             </div>
