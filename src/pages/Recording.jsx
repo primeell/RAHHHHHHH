@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Mic, Square, AlertCircle, ArrowLeft } from 'lucide-react';
 import Button from '../components/Button';
 import AudioVisualizer from '../components/AudioVisualizer';
+import { useTheme } from '../context/ThemeContext';
 
 const Recording = () => {
     const navigate = useNavigate();
+    const { isDarkMode } = useTheme();
     const [isRecording, setIsRecording] = useState(false);
     const [timeLeft, setTimeLeft] = useState(5); // 5 seconds recording
     const [stream, setStream] = useState(null);
@@ -62,21 +64,21 @@ const Recording = () => {
     }, [stream]);
 
     return (
-        <div className="min-h-screen bg-hospital-blue-50 flex flex-col">
+        <div className={`min-h-screen flex flex-col transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-hospital-blue-50'}`}>
             <div className="p-6">
-                <button onClick={() => navigate('/dashboard')} className="text-hospital-blue-600 mb-6 flex items-center">
+                <button onClick={() => navigate('/dashboard')} className={`mb-6 flex items-center transition-colors ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-hospital-blue-600'}`}>
                     <ArrowLeft size={20} className="mr-1" /> Kembali
                 </button>
 
-                <h2 className="text-2xl font-bold text-hospital-blue-900 mb-2">Perekaman Suara</h2>
-                <p className="text-hospital-blue-600 text-sm mb-8">
+                <h2 className={`text-2xl font-bold mb-2 transition-colors ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Perekaman Suara</h2>
+                <p className={`text-sm mb-8 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-hospital-blue-600'}`}>
                     Silakan batuk di dekat mikrofon sebanyak 3-5 kali untuk dianalisis.
                 </p>
 
-                <div className="bg-white rounded-3xl p-6 shadow-xl border border-hospital-blue-100 flex flex-col items-center justify-center min-h-[400px]">
+                <div className={`rounded-3xl p-6 shadow-xl border flex flex-col items-center justify-center min-h-[400px] transition-colors duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-hospital-blue-100'}`}>
 
                     <div className="w-full mb-8">
-                        <AudioVisualizer isRecording={isRecording} stream={stream} />
+                        <AudioVisualizer isRecording={isRecording} stream={stream} darkMode={isDarkMode} />
                     </div>
 
                     {error ? (
@@ -86,10 +88,10 @@ const Recording = () => {
                         </div>
                     ) : (
                         <div className="text-center mb-8">
-                            <span className="text-6xl font-bold text-hospital-blue-900 font-mono">
+                            <span className={`text-6xl font-bold font-mono transition-colors ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>
                                 00:0{timeLeft}
                             </span>
-                            <p className="text-sm text-hospital-blue-400 mt-2 uppercase tracking-widest font-semibold">
+                            <p className={`text-sm mt-2 uppercase tracking-widest font-semibold transition-colors ${isDarkMode ? 'text-slate-500' : 'text-hospital-blue-400'}`}>
                                 {isRecording ? 'Merekam...' : 'Siap Merekam'}
                             </p>
                         </div>
@@ -116,7 +118,7 @@ const Recording = () => {
                         </Button>
                     )}
 
-                    <p className="mt-6 text-center text-xs text-hospital-blue-300 max-w-xs">
+                    <p className={`mt-6 text-center text-xs max-w-xs transition-colors ${isDarkMode ? 'text-slate-500' : 'text-hospital-blue-300'}`}>
                         Pastikan lingkungan sekitar tenang untuk hasil analisis yang akurat.
                     </p>
                 </div>

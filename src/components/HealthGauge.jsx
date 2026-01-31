@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const HealthGauge = ({ score = 85 }) => {
     // 8a. Calculate circumference for stroke-dasharray (r=45, C = 2*pi*45 ≈ 283)
-    const radius = 45;
+    const radius = 70;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (score / 100) * circumference;
 
@@ -23,7 +23,7 @@ const HealthGauge = ({ score = 85 }) => {
                     cy="96"
                     r={radius}
                     stroke="rgba(255,255,255,0.1)"
-                    strokeWidth="12"
+                    strokeWidth="18"
                     fill="transparent"
                 />
 
@@ -33,7 +33,7 @@ const HealthGauge = ({ score = 85 }) => {
                     cy="96"
                     r={radius}
                     stroke={getColor(score)}
-                    strokeWidth="12"
+                    strokeWidth="18"
                     fill="transparent"
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
@@ -45,7 +45,7 @@ const HealthGauge = ({ score = 85 }) => {
             </svg>
 
             {/* Content */}
-            <div className="absolute flex flex-col items-center justify-center text-white">
+            <div className="absolute flex flex-col items-center justify-center text-hospital-blue-900">
                 <span className="text-sm font-medium opacity-80">Health Score</span>
                 <span className="text-5xl font-bold tracking-tighter">{score}</span>
                 <span className="text-xs opacity-60 mt-1">Excellent</span>
