@@ -77,16 +77,27 @@ const Community = () => {
         setPosts([post, ...posts]);
         setNewPost('');
 
-        // Simulating immediate community engagement (auto-like)
-        setTimeout(() => {
+        // Simulating viral community engagement
+        let currentSimulatedLikes = 0;
+        const targetLikes = Math.floor(Math.random() * 3000) + 1000; // Random target between 1000-4000
+
+        const engagementInterval = setInterval(() => {
+            // Randomly increase likes
+            const increment = Math.floor(Math.random() * 15) + 5; // Add 5-20 likes per tick
+            currentSimulatedLikes += increment;
+
+            if (currentSimulatedLikes >= targetLikes) {
+                currentSimulatedLikes = targetLikes;
+                clearInterval(engagementInterval);
+            }
+
             setPosts(currentPosts => {
                 const updatedPosts = currentPosts.map(p =>
-                    p.id === post.id ? { ...p, likes: p.likes + 1 } : p
+                    p.id === post.id ? { ...p, likes: currentSimulatedLikes } : p
                 );
-                // The useEffect will handle saving to localStorage
                 return updatedPosts;
             });
-        }, 3000);
+        }, 150); // Update every 150ms for visible effect
     };
 
     return (
