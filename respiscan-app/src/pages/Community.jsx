@@ -79,25 +79,52 @@ const Community = () => {
 
         // Simulating viral community engagement
         let currentSimulatedLikes = 0;
-        const targetLikes = Math.floor(Math.random() * 3000) + 1000; // Random target between 1000-4000
+        // Random target between 1000 and 100000
+        const targetLikes = Math.floor(Math.random() * 99000) + 1000;
 
-        const engagementInterval = setInterval(() => {
-            // Randomly increase likes
-            const increment = Math.floor(Math.random() * 15) + 5; // Add 5-20 likes per tick
-            currentSimulatedLikes += increment;
+        if (targetLikes > 20000) {
+            // Rapid climb before instant cap
+            let tempLikes = 0;
+            const rapidInterval = setInterval(() => {
+                const increment = Math.floor(Math.random() * 100) + 50; // Faster climb 50-150 likes
+                tempLikes += increment;
 
-            if (currentSimulatedLikes >= targetLikes) {
-                currentSimulatedLikes = targetLikes;
-                clearInterval(engagementInterval);
-            }
+                setPosts(currentPosts => {
+                    return currentPosts.map(p =>
+                        p.id === post.id ? { ...p, likes: tempLikes } : p
+                    );
+                });
+            }, 100);
 
-            setPosts(currentPosts => {
-                const updatedPosts = currentPosts.map(p =>
-                    p.id === post.id ? { ...p, likes: currentSimulatedLikes } : p
-                );
-                return updatedPosts;
-            });
-        }, 150); // Update every 150ms for visible effect
+            // Instant cap after 2 seconds
+            setTimeout(() => {
+                clearInterval(rapidInterval);
+                setPosts(currentPosts => {
+                    const updatedPosts = currentPosts.map(p =>
+                        p.id === post.id ? { ...p, likes: targetLikes } : p
+                    );
+                    return updatedPosts;
+                });
+            }, 2000); // Allow to climb for 2 seconds before jumping to target
+        } else {
+            const engagementInterval = setInterval(() => {
+                // Randomly increase likes
+                const increment = Math.floor(Math.random() * 15) + 5; // Add 5-20 likes per tick
+                currentSimulatedLikes += increment;
+
+                if (currentSimulatedLikes >= targetLikes) {
+                    currentSimulatedLikes = targetLikes;
+                    clearInterval(engagementInterval);
+                }
+
+                setPosts(currentPosts => {
+                    const updatedPosts = currentPosts.map(p =>
+                        p.id === post.id ? { ...p, likes: currentSimulatedLikes } : p
+                    );
+                    return updatedPosts;
+                });
+            }, 150); // Update every 150ms for visible effect
+        }
     };
 
     return (
@@ -107,7 +134,7 @@ const Community = () => {
                 className="fixed inset-0 w-full h-full -z-20 bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: "url('/hospital-bg.png')" }}
             />
-            <div className={`fixed inset-0 w-full h-full -z-10 transition-colors duration-300 ${isDarkMode ? 'bg-hospital-blue-900/90' : 'bg-hospital-blue-900/80'}`} />
+            <div className={`fixed inset-0 w-full h-full -z-10 transition-colors duration-300 ${isDarkMode ? 'bg-hospital-blue-900/90' : 'bg-hospital-blue-50/90'}`} />
 
             {/* Ambient Decorations */}
             <div className={`absolute top-[-10%] right-[-10%] w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse pointer-events-none transition-colors duration-700 ${isDarkMode ? 'bg-blue-600' : 'bg-cyan-400'}`}></div>
@@ -117,10 +144,10 @@ const Community = () => {
             {/* Header */}
             <div className="px-6 pt-12 pb-6 sticky top-0 z-10">
                 <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl backdrop-blur-md ${isDarkMode ? 'bg-slate-800/50' : 'bg-white/10'}`}>
-                        <Users size={28} className={isDarkMode ? 'text-blue-400' : 'text-white'} />
+                    <div className={`p-2 rounded-xl backdrop-blur-md ${isDarkMode ? 'bg-slate-800/50' : 'bg-white/50'}`}>
+                        <Users size={28} className={isDarkMode ? 'text-blue-400' : 'text-medical-teal-600'} />
                     </div>
-                    <h1 className="text-2xl font-bold font-display text-white">Komunitas</h1>
+                    <h1 className={`text-2xl font-bold font-display ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Komunitas</h1>
                 </div>
             </div>
 
