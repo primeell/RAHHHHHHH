@@ -5,7 +5,7 @@ const FitnessContext = createContext();
 export const FitnessProvider = ({ children }) => {
     // Mock data initialized here
     const [runTargetKm, setRunTargetKm] = useState(3);
-    const [runCurrentKm, setRunCurrentKm] = useState(1.2);
+    const [runCurrentKm, setRunCurrentKm] = useState(0);
 
     const runGoalMet = runCurrentKm >= runTargetKm;
 

@@ -10,7 +10,6 @@ const Onboarding = () => {
     const { isDarkMode } = useTheme();
     const [name, setName] = useState('');
     const [age, setAge] = useState('');
-    const [location, setLocation] = useState('');
     const [speech, setSpeech] = useState(null);
 
     const handleBotClick = () => {
@@ -23,12 +22,13 @@ const Onboarding = () => {
         ];
         const randomFact = facts[Math.floor(Math.random() * facts.length)];
         setSpeech(randomFact);
+        setTimeout(() => setSpeech(null), 3000);
     };
 
     const handleStart = (e) => {
         e.preventDefault();
-        if (name && age && location) {
-            const user = { name, age, location, darkMode: isDarkMode, healthScore: 85 };
+        if (name && age) {
+            const user = { name, age, darkMode: isDarkMode, healthScore: 85 };
             try {
                 localStorage.setItem('respi_user', JSON.stringify(user));
             } catch (error) {
@@ -100,14 +100,6 @@ const Onboarding = () => {
                             type="number"
                             value={age}
                             onChange={(e) => setAge(e.target.value)}
-                            darkMode={isDarkMode}
-                        />
-                        <Input
-                            label="Lokasi (Kota)"
-                            placeholder="Contoh: Surabaya"
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
-                            required
                             darkMode={isDarkMode}
                         />
 
