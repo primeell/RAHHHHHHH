@@ -14,19 +14,37 @@ const Recording = () => {
     const [error, setError] = useState(null);
     const timerRef = useRef(null);
 
+    const [audioChunks, setAudioChunks] = useState([]);
+
+    // MediaRecorder ref
+    const mediaRecorderRef = useRef(null);
+
     const startRecording = async () => {
         try {
             const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
             setStream(audioStream);
             setIsRecording(true);
             setError(null);
+            setAudioChunks([]);
+
+            // Init MediaRecorder
+            const mediaRecorder = new MediaRecorder(audioStream);
+            mediaRecorderRef.current = mediaRecorder;
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    setAudioChunks((prev) => [...prev, event.data]);
+                }
+            };
+
+            mediaRecorder.start();
 
             setTimeLeft(5);
 
             timerRef.current = setInterval(() => {
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
-                        stopRecording(audioStream);
+                        stopRecording();
                         return 0;
                     }
                     return prev - 1;
@@ -39,19 +57,33 @@ const Recording = () => {
         }
     };
 
-    const stopRecording = (currentStream) => {
+    const stopRecording = () => {
         clearInterval(timerRef.current);
-        const s = currentStream || stream;
-        if (s) {
-            s.getTracks().forEach(track => track.stop());
-        }
-        setIsRecording(false);
-        setStream(null);
 
-        // Auto navigate to analysis after recording
-        setTimeout(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+            mediaRecorderRef.current.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+
+                setIsRecording(false);
+                setStream(null);
+
+                // Auto navigate to analysis after recording with BLOB
+                setTimeout(() => {
+                    navigate('/analysis', { state: { audioBlob } });
+                }, 500);
+            };
+        } else {
+            // Fallback if recorder failed
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            setIsRecording(false);
+            setStream(null);
             navigate('/analysis');
-        }, 500);
+        }
     };
 
     useEffect(() => {

@@ -46,9 +46,9 @@ const HealthGauge = ({ score = 85 }) => {
 
             {/* Content */}
             <div className="absolute flex flex-col items-center justify-center text-hospital-blue-900">
-                <span className="text-sm font-medium opacity-80">Health Score</span>
+                <span className="text-sm font-medium opacity-80">Skor Kesehatan</span>
                 <span className="text-5xl font-bold tracking-tighter">{score}</span>
-                <span className="text-xs opacity-60 mt-1">Excellent</span>
+                <span className="text-xs opacity-60 mt-1">Sangat Baik</span>
             </div>
 
             {/* Glow Effect */}

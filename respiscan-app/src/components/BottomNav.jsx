@@ -10,10 +10,10 @@ const BottomNav = () => {
     const { isDarkMode } = useTheme();
 
     const navItems = [
-        { icon: Home, label: 'Home', path: '/dashboard' },
-        { icon: Activity, label: 'Scan', path: '/record' },
-        { icon: Dumbbell, label: 'Exercise', path: '/exercise' },
-        { icon: User, label: 'Profile', path: '/profile' },
+        { icon: Home, label: 'Beranda', path: '/dashboard' },
+        { icon: Activity, label: 'Pindai', path: '/record' },
+        { icon: Dumbbell, label: 'Latihan', path: '/exercise' },
+        { icon: User, label: 'Profil', path: '/profile' },
     ];
 
     return (

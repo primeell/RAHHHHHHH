@@ -66,7 +66,7 @@ const BreathingScan = () => {
                 <button onClick={handleStop} className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
                     <X className="w-6 h-6" />
                 </button>
-                <span className="font-semibold text-lg">Breathing Rate Scan</span>
+                <span className="font-semibold text-lg">Pindaian Laju Pernapasan</span>
                 <div className="w-10" /> {/* Spacer */}
             </div>
 
@@ -75,7 +75,7 @@ const BreathingScan = () => {
                 {error ? (
                     <div className="p-4 text-center">
                         <p className="text-red-400 mb-2">{error}</p>
-                        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 rounded-lg">Retry</button>
+                        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 rounded-lg">Coba Lagi</button>
                     </div>
                 ) : (
                     <video
@@ -98,7 +98,7 @@ const BreathingScan = () => {
                             <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-blue-500 -mb-1 -mr-1 rounded-br"></div>
                         </div>
                         <p className="absolute mt-80 text-white/80 text-sm bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">
-                            Place chest within frame
+                            Tempatkan dada di dalam bingkai
                         </p>
                     </div>
                 )}
@@ -109,7 +109,7 @@ const BreathingScan = () => {
                 {isScanning ? (
                     <div className="w-full max-w-xs">
                         <div className="flex justify-between text-sm mb-2 text-blue-300">
-                            <span>Analyzing...</span>
+                            <span>Menganalisis...</span>
                             <span>{Math.round(progress)}%</span>
                         </div>
                         <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -118,7 +118,7 @@ const BreathingScan = () => {
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
-                        <p className="text-center text-xs text-slate-400 mt-4">Keep device steady</p>
+                        <p className="text-center text-xs text-slate-400 mt-4">Jaga perangkat tetap stabil</p>
                     </div>
                 ) : (
                     !error && (
@@ -131,7 +131,7 @@ const BreathingScan = () => {
                     )
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

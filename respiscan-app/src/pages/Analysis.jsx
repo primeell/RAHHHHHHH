@@ -4,13 +4,16 @@ import { Cpu, CheckCircle2, FileText, Activity } from 'lucide-react';
 import SpectrogramView from '../components/SpectrogramView';
 import { useTheme } from '../context/ThemeContext';
 
+import { loadModel, predictCough } from '../services/inferenceService';
+import { useLocation } from 'react-router-dom';
+
 const LOGS = [
     "Initializing MobileNetV2 core...",
     "Loading quantized weights (int8)...",
     "Allocating tensors...",
     "Processing audio buffer (44.1kHz)...",
     "Applying Noise Reduction DSP...",
-    "Generating Mel-Spectrogram...",
+    "Generating Mel-Spectrogram features...",
     "Extracting MFCC features...",
     "Running Inference...",
     "Calculating Softmax probabilities...",
@@ -21,43 +24,97 @@ const LOGS = [
 const Analysis = () => {
     const navigate = useNavigate();
     const { isDarkMode } = useTheme();
+    const location = useLocation();
     const [progress, setProgress] = useState(0);
     const [userLogs, setUserLogs] = useState([]);
 
-    useEffect(() => {
-        // Simulation loops
-        let currentProgress = 0;
-        const progressInterval = setInterval(() => {
-            currentProgress += 1;
-            if (currentProgress > 100) {
-                currentProgress = 100;
-                clearInterval(progressInterval);
-                setTimeout(() => {
-                    // Randomly result for demo purposes (Weighted towards 'Low Risk' for typical demo)
-                    // But we can make it random or fixed. Let's make it random but mostly low.
-                    const isHighRisk = Math.random() > 0.7;
-                    navigate('/result', { state: { risk: isHighRisk ? 'High' : 'Low' } });
-                }, 1000);
-            }
-            setProgress(currentProgress);
-        }, 50); // 5 seconds total
+    // Get audioBlob from navigation state
+    const audioBlob = location.state?.audioBlob;
 
-        // Log messages
-        let logIndex = 0;
-        const logInterval = setInterval(() => {
-            if (logIndex < LOGS.length) {
-                setUserLogs(prev => [...prev, LOGS[logIndex]]);
-                logIndex++;
-            } else {
-                clearInterval(logInterval);
+    const addLog = (message) => {
+        setUserLogs(prev => [...prev, message]);
+    };
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const runAnalysis = async () => {
+            if (!audioBlob) {
+                if (isMounted) {
+                    addLog("Error: No audio data found.");
+                    addLog("Redirecting to recording...");
+                    setTimeout(() => navigate('/record'), 2000);
+                }
+                return;
             }
-        }, 400);
+
+            try {
+                // Phase 1: Initialization
+                setProgress(10);
+                addLog("Initializing Custom AI Engine...");
+
+                await loadModel(); // Pre-load
+                if (!isMounted) return;
+
+                setProgress(30);
+                addLog("Model Loaded: MobileNetV2 (RespiScan Custom)");
+
+                // Phase 2: Preprocessing
+                addLog("Processing Audio Signal (Web Audio API)...");
+                setProgress(40);
+
+                addLog("Generating Mel-Spectrogram features...");
+                setProgress(50);
+
+                // Phase 3: Inference
+                addLog("Running Inference on TensorFlow.js...");
+                setProgress(70);
+
+                const start = performance.now();
+                const result = await predictCough(audioBlob);
+                const end = performance.now();
+
+                if (!isMounted) return;
+
+                addLog(`Inference complete in ${(end - start).toFixed(2)}ms`);
+                setProgress(90);
+
+                addLog("Interpreting probability distribution...");
+                setProgress(100);
+
+                // Simulation: map output index 0 or 1 to risk
+                // Typically: 0 = Healthy/Background, 1 = Cough/Sick
+                // This depends on how the user trained the model. 
+                // We'll assume typically 0 is 'Negative' and 1 is 'Positive'
+                // But without labels.txt, we guess.
+                const isHighRisk = result.index === 1;
+
+                addLog(`Result: Class ${result.index} (Conf: ${(result.score * 100).toFixed(1)}%)`);
+
+                setTimeout(() => {
+                    navigate('/result', {
+                        state: {
+                            risk: isHighRisk ? 'High' : 'Low',
+                            confidence: result.score,
+                            raw: result.raw
+                        }
+                    });
+                }, 1000);
+
+            } catch (error) {
+                if (!isMounted) return;
+                console.error(error);
+                addLog(`Error: ${error.message}`);
+                addLog("Please ensure 'public/AI' contains valid model files.");
+            }
+        };
+
+        runAnalysis();
 
         return () => {
-            clearInterval(progressInterval);
-            clearInterval(logInterval);
+            isMounted = false;
         };
-    }, [navigate]);
+    }, [audioBlob, navigate]);
 
     return (
         <div className={`min-h-screen p-6 flex flex-col items-center justify-center transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-hospital-blue-50 text-hospital-blue-900'}`}>
