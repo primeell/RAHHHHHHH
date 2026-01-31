@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Activity, Dumbbell, User } from 'lucide-react';
+import { Home, Activity, Dumbbell, User, Users } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import { useTheme } from '../context/ThemeContext';
@@ -11,7 +11,7 @@ const BottomNav = () => {
 
     const navItems = [
         { icon: Home, label: 'Beranda', path: '/dashboard' },
-        { icon: User, label: 'Komunitas', path: '/community' }, // Replaced Activity/Pindai
+        { icon: Users, label: 'Komunitas', path: '/community' }, // Replaced Activity/Pindai
         { icon: Dumbbell, label: 'Latihan', path: '/exercise' },
         { icon: User, label: 'Profil', path: '/profile' },
     ];

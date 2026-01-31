@@ -110,14 +110,14 @@ const Dashboard = () => {
     };
 
     return (
-        <div className={`min-h-screen relative pb-32 overflow-hidden font-sans transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-hospital-blue-900'}`}>
+        <div className={`min-h-screen relative pb-32 overflow-hidden font-sans transition-colors duration-300 ${isDarkMode ? 'bg-hospital-blue-950' : 'bg-hospital-blue-900'}`}>
             <div
                 className="fixed inset-0 w-full h-full -z-20 bg-cover bg-center bg-no-repeat opacity-50"
                 style={{ backgroundImage: "url('/hospital-bg.png')" }}
             />
 
             {/* Dark Overlay to ensure readability */}
-            <div className={`fixed inset-0 w-full h-full -z-10 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900/90' : 'bg-hospital-blue-900/70'}`} />
+            <div className={`fixed inset-0 w-full h-full -z-10 transition-colors duration-300 ${isDarkMode ? 'bg-hospital-blue-950/90' : 'bg-hospital-blue-900/70'}`} />
 
             {/* Ambient Decorations */}
             <div className={`absolute top-[-10%] right-[-10%] w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse pointer-events-none transition-colors duration-700 ${isDarkMode ? 'bg-blue-600' : 'bg-cyan-400'}`}></div>

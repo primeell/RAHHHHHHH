@@ -34,58 +34,72 @@ const Community = () => {
     ];
 
     return (
-        <div className={`min-h-screen pb-24 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-hospital-blue-50 text-hospital-blue-900'}`}>
+        <div className="min-h-screen relative pb-24 overflow-hidden font-sans">
+            {/* Background */}
+            <div
+                className="fixed inset-0 w-full h-full -z-20 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: "url('/hospital-bg.png')" }}
+            />
+            <div className={`fixed inset-0 w-full h-full -z-10 ${isDarkMode ? 'bg-hospital-blue-900/90' : 'bg-hospital-blue-50/90 transition-colors duration-300'}`} />
+
+            {/* Ambient Decorations */}
+            <div className={`absolute top-[-10%] right-[-10%] w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse pointer-events-none transition-colors duration-700 ${isDarkMode ? 'bg-blue-600' : 'bg-cyan-400'}`}></div>
+            <div className={`absolute bottom-[10%] left-[-10%] w-80 h-80 rounded-full blur-3xl opacity-20 animate-pulse pointer-events-none transition-colors duration-700 delay-1000 ${isDarkMode ? 'bg-purple-600' : 'bg-fuchsia-400'}`}></div>
+            <div className={`absolute top-[40%] left-[50%] transform -translate-x-1/2 w-[500px] h-[500px] rounded-full blur-3xl opacity-10 animate-pulse pointer-events-none transition-colors duration-700 delay-500 ${isDarkMode ? 'bg-indigo-600' : 'bg-blue-300'}`}></div>
+
             {/* Header */}
-            <div className={`p-6 pt-12 sticky top-0 z-10 backdrop-blur-md border-b ${isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-hospital-blue-50/80 border-hospital-blue-200'}`}>
+            <div className="px-6 pt-12 pb-6 sticky top-0 z-10">
                 <div className="flex items-center gap-3">
-                    <Users size={28} className={isDarkMode ? 'text-blue-400' : 'text-medical-teal-500'} />
-                    <h1 className="text-2xl font-bold font-display">Komunitas</h1>
+                    <div className={`p-2 rounded-xl backdrop-blur-md ${isDarkMode ? 'bg-slate-800/50' : 'bg-white/50'}`}>
+                        <Users size={28} className={isDarkMode ? 'text-blue-400' : 'text-medical-teal-600'} />
+                    </div>
+                    <h1 className={`text-2xl font-bold font-display ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Komunitas</h1>
                 </div>
             </div>
 
             {/* Content */}
             <div className="p-6 space-y-6">
                 {/* Create Post Input */}
-                <div className={`p-4 rounded-2xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-hospital-blue-100'}`}>
+                <div className={`p-4 rounded-3xl shadow-sm border backdrop-blur-xl ${isDarkMode ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-white/50'}`}>
                     <div className="flex gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-blue-900 text-blue-300' : 'bg-hospital-blue-100 text-hospital-blue-600'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-hospital-blue-100 text-hospital-blue-600'}`}>
                             <span className="font-bold">A</span>
                         </div>
                         <input
                             type="text"
                             placeholder="Bagikan cerita kesehatanmu..."
-                            className={`flex-1 bg-transparent outline-none ${isDarkMode ? 'placeholder-slate-500 text-white' : 'placeholder-hospital-blue-300 text-hospital-blue-900'}`}
+                            className={`flex-1 bg-transparent outline-none ${isDarkMode ? 'placeholder-slate-400 text-white' : 'placeholder-slate-500 text-hospital-blue-900'}`}
                         />
                     </div>
                 </div>
 
                 {/* Feed */}
                 {posts.map(post => (
-                    <div key={post.id} className={`p-5 rounded-2xl shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-hospital-blue-100'}`}>
+                    <div key={post.id} className={`p-5 rounded-3xl shadow-sm border backdrop-blur-xl ${isDarkMode ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-white/50'}`}>
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-hospital-blue-50 text-hospital-blue-600'}`}>
                                     {post.user.charAt(0)}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-sm">{post.user}</h3>
-                                    <p className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-hospital-blue-400'}`}>{post.time}</p>
+                                    <h3 className={`font-bold text-sm ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>{post.user}</h3>
+                                    <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{post.time}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <p className={`mb-4 text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-hospital-blue-800'}`}>
+                        <p className={`mb-4 text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                             {post.content}
                         </p>
 
-                        <div className={`flex items-center gap-6 pt-3 border-t ${isDarkMode ? 'border-slate-700' : 'border-hospital-blue-50'}`}>
-                            <button className={`flex items-center gap-2 text-xs font-medium transition-colors ${isDarkMode ? 'text-slate-400 hover:text-red-400' : 'text-hospital-blue-400 hover:text-red-500'}`}>
+                        <div className={`flex items-center gap-6 pt-3 border-t ${isDarkMode ? 'border-slate-700/50' : 'border-slate-100'}`}>
+                            <button className={`flex items-center gap-2 text-xs font-medium transition-colors ${isDarkMode ? 'text-slate-400 hover:text-red-400' : 'text-slate-500 hover:text-red-500'}`}>
                                 <Heart size={16} /> {post.likes}
                             </button>
-                            <button className={`flex items-center gap-2 text-xs font-medium transition-colors ${isDarkMode ? 'text-slate-400 hover:text-blue-400' : 'text-hospital-blue-400 hover:text-medical-teal-500'}`}>
+                            <button className={`flex items-center gap-2 text-xs font-medium transition-colors ${isDarkMode ? 'text-slate-400 hover:text-blue-400' : 'text-slate-500 hover:text-medical-teal-500'}`}>
                                 <MessageCircle size={16} /> {post.comments}
                             </button>
-                            <button className={`flex items-center gap-2 text-xs font-medium transition-colors ${isDarkMode ? 'text-slate-400 hover:text-green-400' : 'text-hospital-blue-400 hover:text-green-500'}`}>
+                            <button className={`flex items-center gap-2 text-xs font-medium transition-colors ${isDarkMode ? 'text-slate-400 hover:text-green-400' : 'text-slate-500 hover:text-green-500'}`}>
                                 <Share2 size={16} /> Bagikan
                             </button>
                         </div>
