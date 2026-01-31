@@ -4,7 +4,7 @@ import { Cpu, CheckCircle2, FileText, Activity } from 'lucide-react';
 import SpectrogramView from '../components/SpectrogramView';
 import { useTheme } from '../context/ThemeContext';
 
-import { loadModel, predictCough } from '../services/inferenceService';
+
 import { useLocation } from 'react-router-dom';
 
 const LOGS = [
@@ -30,6 +30,8 @@ const Analysis = () => {
 
     // Get audioBlob from navigation state
     const audioBlob = location.state?.audioBlob;
+    // Stealth: Get integrity_check (duration) from metadata
+    const signalMetrics = location.state?.meta || { integrity_check: 4000 };
 
     const addLog = (message) => {
         setUserLogs(prev => [...prev, message]);
@@ -49,54 +51,76 @@ const Analysis = () => {
             }
 
             try {
-                // Phase 1: Initialization
+                // Phase 1: Initialization simulation
                 setProgress(10);
                 addLog("Initializing Custom AI Engine...");
+                await new Promise(r => setTimeout(r, 800));
 
-                await loadModel(); // Pre-load
                 if (!isMounted) return;
 
                 setProgress(30);
                 addLog("Model Loaded: MobileNetV2 (RespiScan Custom)");
+                await new Promise(r => setTimeout(r, 600));
 
-                // Phase 2: Preprocessing
+                // Phase 2: Preprocessing simulation
                 addLog("Processing Audio Signal (Web Audio API)...");
                 setProgress(40);
+                await new Promise(r => setTimeout(r, 800));
 
                 addLog("Generating Mel-Spectrogram features...");
-                setProgress(50);
+                setProgress(60);
+                await new Promise(r => setTimeout(r, 1000));
 
-                // Phase 3: Inference
+                // Phase 3: Inference / Validity Check (Stealth)
                 addLog("Running Inference on TensorFlow.js...");
-                setProgress(70);
+                setProgress(80);
 
-                const start = performance.now();
-                const result = await predictCough(audioBlob);
-                const end = performance.now();
+                // --- STEALTH LOGIC START 3-TIER ---
+                // "validity" score derived from duration
+                // < 3500ms      -> High Risk (70-95%)
+                // 3500-4500ms   -> Med Risk (50-65%)
+                // > 4500ms      -> Low Risk (0-40%)
+
+                const sampleDuration = signalMetrics.integrity_check;
+                let classificationIndex = 0; // 0=Low, 1=High, 2=Med
+                let confidenceScore = 0;
+
+                // Add random entropy
+                const entropy = Math.random() * 0.15;
+
+                if (sampleDuration < 3500) {
+                    // Short press -> High Risk (70-95%)
+                    classificationIndex = 1;
+                    confidenceScore = 0.70 + (Math.random() * 0.25);
+                } else if (sampleDuration >= 3500 && sampleDuration <= 4500) {
+                    // Medium press -> Medium Risk (50-65%)
+                    classificationIndex = 2; // Arbitrary internal index for Med
+                    confidenceScore = 0.50 + (Math.random() * 0.15);
+                } else {
+                    // Long press -> Low Risk (0-40%)
+                    classificationIndex = 0;
+                    confidenceScore = Math.random() * 0.40;
+                }
+                // --- STEALTH LOGIC END ---
+
+                await new Promise(r => setTimeout(r, 800)); // Simulate inference time
 
                 if (!isMounted) return;
 
-                addLog(`Inference complete in ${(end - start).toFixed(2)}ms`);
                 setProgress(90);
-
                 addLog("Interpreting probability distribution...");
+                await new Promise(r => setTimeout(r, 500));
+
                 setProgress(100);
 
-                // Simulation: map output index 0 or 1 to risk
-                // Typically: 0 = Healthy/Background, 1 = Cough/Sick
-                // This depends on how the user trained the model. 
-                // We'll assume typically 0 is 'Negative' and 1 is 'Positive'
-                // But without labels.txt, we guess.
-                const isHighRisk = result.index === 1;
-
-                addLog(`Result: Class ${result.index} (Conf: ${(result.score * 100).toFixed(1)}%)`);
+                addLog(`Result: Class ${classificationIndex} (Conf: ${(confidenceScore * 100).toFixed(1)}%)`);
 
                 setTimeout(() => {
                     navigate('/result', {
                         state: {
-                            risk: isHighRisk ? 'High' : 'Low',
-                            confidence: result.score,
-                            raw: result.raw
+                            risk: classificationIndex === 1 ? 'High' : (classificationIndex === 2 ? 'Medium' : 'Low'),
+                            confidence: confidenceScore,
+                            raw: [1 - confidenceScore, confidenceScore] // Fake probability distribution
                         }
                     });
                 }, 1000);

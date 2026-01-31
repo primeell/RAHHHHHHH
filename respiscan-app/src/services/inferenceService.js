@@ -8,27 +8,52 @@ let model = null;
 /**
  * Load the model from public folder.
  */
+const timeoutMs = 20000; // 20 second timeout
+
 export const loadModel = async () => {
     if (model) return model;
 
     console.log('Using backend:', tf.getBackend());
-    // Force backend if needed, but 'webgl' is default
-    // await tf.setBackend('webgl'); 
 
-    const timeoutMs = 20000; // 20 second timeout
     const loadPromise = new Promise(async (resolve, reject) => {
         try {
             console.log('Loading model from:', MODEL_URL);
-            // Add cache buster
             const modelUrlWithCacheBuster = `${MODEL_URL}?v=${new Date().getTime()}`;
 
-            const loadedModel = await tf.loadLayersModel(modelUrlWithCacheBuster);
-            console.log('Model loaded successfully');
+            let loadedModel;
+            try {
+                // Try loading as Layers Model (Keras) first
+                console.log('Attempting to load as LayersModel...');
+                loadedModel = await tf.loadLayersModel(modelUrlWithCacheBuster, {
+                    onProgress: (fraction) => {
+                        console.log(`Model loading progress: ${(fraction * 100).toFixed(1)}%`);
+                    }
+                });
+                console.log('Successfully loaded as LayersModel');
+            } catch (layerError) {
+                console.warn('Failed to load as LayersModel:', layerError.message);
+                console.log('Attempting to load as GraphModel...');
+
+                // Fallback: Try loading as Graph Model (SavedModel/TFHub)
+                try {
+                    loadedModel = await tf.loadGraphModel(modelUrlWithCacheBuster);
+                    console.log('Successfully loaded as GraphModel');
+                } catch (graphError) {
+                    console.error('Failed to load as GraphModel:', graphError.message);
+                    throw new Error(`Model load failed. Layers: ${layerError.message} | Graph: ${graphError.message}`);
+                }
+            }
 
             // Warmup
             tf.tidy(() => {
                 try {
-                    loadedModel.predict(tf.zeros([1, 224, 224, 3]));
+                    const zeroTensor = tf.zeros([1, IMG_SIZE, IMG_SIZE, 3]);
+                    // Check if predict method exists (Layers) or execute (Graph)
+                    if (loadedModel.predict) {
+                        loadedModel.predict(zeroTensor);
+                    } else if (loadedModel.execute) {
+                        loadedModel.execute(zeroTensor);
+                    }
                     console.log('Warmup successful');
                 } catch (e) {
                     console.warn('Warmup prediction failed (non-fatal):', e);
@@ -53,11 +78,36 @@ export const loadModel = async () => {
     }
 };
 
-/**
- * Preprocess audio blob into a spectrogram tensor.
- * Since we don't have a backend lib for Mel-Spectrogram, we use Web Audio API 
- * to generate frequency data and render it to a canvas, then read pixels.
- */
+// Simple FFT implementation (Radix-2 Cooley-Tukey)
+const fft = (inputReal, inputImag) => {
+    const n = inputReal.length;
+    if (n <= 1) return;
+    const half = n / 2;
+    const evenReal = new Float32Array(half);
+    const evenImag = new Float32Array(half);
+    const oddReal = new Float32Array(half);
+    const oddImag = new Float32Array(half);
+    for (let i = 0; i < half; i++) {
+        evenReal[i] = inputReal[2 * i];
+        evenImag[i] = inputImag[2 * i];
+        oddReal[i] = inputReal[2 * i + 1];
+        oddImag[i] = inputImag[2 * i + 1];
+    }
+    fft(evenReal, evenImag);
+    fft(oddReal, oddImag);
+    for (let k = 0; k < half; k++) {
+        const theta = -2 * Math.PI * k / n;
+        const wr = Math.cos(theta);
+        const wi = Math.sin(theta);
+        const tReal = wr * oddReal[k] - wi * oddImag[k];
+        const tImag = wi * oddReal[k] + wr * oddImag[k];
+        inputReal[k] = evenReal[k] + tReal;
+        inputImag[k] = evenImag[k] + tImag;
+        inputReal[k + half] = evenReal[k] - tReal;
+        inputImag[k + half] = evenImag[k] - tImag;
+    }
+};
+
 export const preprocessAudio = async (audioBlob) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -65,80 +115,103 @@ export const preprocessAudio = async (audioBlob) => {
             const arrayBuffer = await audioBlob.arrayBuffer();
             const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-            // Offline context for faster processing
-            const offlineCtx = new OfflineAudioContext(1, audioBuffer.length, audioBuffer.sampleRate);
-            const source = offlineCtx.createBufferSource();
-            source.buffer = audioBuffer;
+            // Get raw PCM data
+            const channelData = audioBuffer.getChannelData(0);
+            const duration = audioBuffer.duration;
+            const sampleRate = audioBuffer.sampleRate;
 
-            const analyser = offlineCtx.createAnalyser();
-            analyser.fftSize = 1024;
-            analyser.smoothingTimeConstant = 0.8;
+            // Parameters matched to original logic
+            const fftSize = 1024;
+            const freqBinCount = fftSize / 2;
+            const steps = IMG_SIZE; // 224
+            const stepTime = duration / steps;
+            const stepSamples = Math.floor(stepTime * sampleRate);
 
-            source.connect(analyser);
-            analyser.connect(offlineCtx.destination);
-
-            source.start(0);
-
-            // Render spectrogram to a canvas
+            // Prepare Canvas
             const canvas = document.createElement('canvas');
             canvas.width = IMG_SIZE;
             canvas.height = IMG_SIZE;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'black';
+            ctx.fillStyle = 'black'; // Background
             ctx.fillRect(0, 0, IMG_SIZE, IMG_SIZE);
 
-            // Analyze frames
-            // Note: Simplification - we map time to X axis
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
+            // Reusable buffers
+            const real = new Float32Array(fftSize);
+            const imag = new Float32Array(fftSize);
+            const windowTable = new Float32Array(fftSize);
 
-            // We need to run the graph to get data, 
-            // but OfflineAudioContext renders as a batch.
-            // For real spectrogram, we usually slice the buffer manually.
-
-            // Manual Short-Time Fourier Transform (STFT) simulation via mapping
-            // Since complex Mel-Spec is hard in pure JS without heavy libs (e.g. Meyda),
-            // We will create a visual representation similar to what typical models expect if trained on images.
-
-            // Normalize audio data to 0-255 range for image
-            const channelData = audioBuffer.getChannelData(0);
-            const step = Math.floor(channelData.length / IMG_SIZE);
-
-            for (let i = 0; i < IMG_SIZE; i++) {
-                // Get a chunk of audio
-                const start = i * step;
-                const end = start + step;
-                let sum = 0;
-                for (let j = start; j < end; j++) {
-                    sum += Math.abs(channelData[j] || 0);
-                }
-                const avg = sum / step;
-
-                // Draw a vertical bar "spectrum" (simulated)
-                // In a real STFT row, we would have frequency bins.
-                // Here we create a pseudo-spectrogram by mapping amplitude to brightness and color.
-                const val = Math.min(255, avg * 5000); // Gain
-
-                // Heatmap style coloring
-                ctx.fillStyle = `rgb(${val}, ${val * 0.5}, ${val * 0.2})`;
-                // Draw across height based on "frequency" approximation (randomized noise for texture)
-                ctx.fillRect(i, 0, 1, IMG_SIZE);
+            // Hanning window
+            for (let i = 0; i < fftSize; i++) {
+                windowTable[i] = 0.5 * (1 - Math.cos(2 * Math.PI * i / (fftSize - 1)));
             }
 
-            // Create tensor from canvas
-            // MobileNet expects [1, 224, 224, 3] and normalized indices [-1, 1] or [0, 1]
+            // Generate Spectrogram Column by Column
+            for (let i = 0; i < steps; i++) {
+                // Calculate start sample for this time step
+                // Original used: t = max(0, i * stepTime)
+                const startSample = Math.floor(i * stepSamples);
+
+                // Clear buffers
+                real.fill(0);
+                imag.fill(0);
+
+                // Copy & Window
+                for (let j = 0; j < fftSize; j++) {
+                    const idx = startSample + j;
+                    if (idx < channelData.length) {
+                        real[j] = channelData[idx] * windowTable[j];
+                    }
+                }
+
+                // Compute FFT
+                fft(real, imag);
+
+                // Compute Magnitude & Map to Color
+                // y goes 0..223. Original logic: 0 is top (high freq?), 223 is bottom.
+                // Original map: binIdx = ((IMG_SIZE - 1 - y) / IMG_SIZE) * freqData.length
+
+                for (let y = 0; y < IMG_SIZE; y++) {
+                    const binIdx = Math.floor(((IMG_SIZE - 1 - y) / IMG_SIZE) * freqBinCount);
+                    // Valid bin?
+                    if (binIdx < 0 || binIdx >= freqBinCount) continue;
+
+                    const rVal = real[binIdx];
+                    const iVal = imag[binIdx];
+                    const mag = Math.sqrt(rVal * rVal + iVal * iVal);
+
+                    // Convert to dB: 20 * log10(mag)
+                    // AnalyserNode typically maps [-100dB, -30dB] to [0, 255]
+                    // We need to approximate this normalization.
+                    // epsilon to avoid log(0)
+                    const db = 20 * Math.log10(mag + 1e-6);
+
+                    // Normalize -100 to -30 -> 0 to 255
+                    const minDb = -100;
+                    const maxDb = -30;
+                    let val = (db - minDb) / (maxDb - minDb) * 255;
+                    val = Math.max(0, Math.min(255, val));
+
+                    // Heatmap Color Map
+                    const r = val;
+                    const g = val > 128 ? (val - 128) * 2 : 0;
+                    const b = val > 200 ? (val - 200) * 5 : val * 0.5;
+
+                    ctx.fillStyle = `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`;
+                    ctx.fillRect(i, y, 1, 1);
+                }
+            }
+
+            // Create tensor
             const tensor = tf.browser.fromPixels(canvas)
                 .resizeNearestNeighbor([IMG_SIZE, IMG_SIZE])
                 .toFloat()
                 .expandDims();
 
-            // MobileNetV2 preprocessing: (pixel - 127.5) / 127.5  => Range [-1, 1]
-            // Or sometimes just / 255.0 => [0, 1].
-            // We assume standard Keras preprocessing [-1, 1]
             const normalized = tensor.div(127.5).sub(1);
-
             resolve(normalized);
+
         } catch (e) {
+            console.error("Spectrogram generation failed:", e);
             reject(e);
         }
     });
@@ -153,7 +226,19 @@ export const predictCough = async (audioBlob) => {
         const tensor = await preprocessAudio(audioBlob);
 
         console.log('Running inference...');
-        const prediction = model.predict(tensor);
+
+        // Handle both GraphModel (execute) and LayersModel (predict)
+        let prediction;
+        if (model.predict) {
+            prediction = model.predict(tensor);
+        } else if (model.execute) {
+            prediction = model.execute(tensor);
+            // GraphModel might return array or map, handle it
+            if (Array.isArray(prediction)) prediction = prediction[0];
+        } else {
+            throw new Error("Unknown model type: no predict or execute method");
+        }
+
         const data = await prediction.data();
 
         console.log('Raw output:', data);

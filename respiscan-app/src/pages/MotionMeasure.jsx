@@ -143,40 +143,95 @@ const MotionMeasure = () => {
             </header>
 
             <main className="flex-1 flex flex-col items-center justify-center space-y-8">
-                <div className={`w-64 h-64 rounded-full flex items-center justify-center relative transition-colors duration-500 ${isMeasuring ? 'animate-pulse' : ''} ${isDarkMode ? 'bg-slate-800' : 'bg-white shadow-xl'}`}>
+                {/* Dynamic Visualizer Area */}
+                <div className={`relative w-72 h-72 rounded-full flex items-center justify-center mb-8 transition-all duration-500 ${isMeasuring ? 'scale-110' : 'scale-100'} ${isDarkMode ? 'bg-slate-800 shadow-[0_0_50px_rgba(16,185,129,0.1)]' : 'bg-white shadow-2xl'}`}>
+
+                    {/* Ring Animations */}
                     {isMeasuring && (
-                        <div className="absolute inset-0 border-4 border-medical-teal-500 rounded-full animate-ping opacity-20"></div>
+                        <>
+                            <div className="absolute inset-0 rounded-full border-4 border-medical-teal-500/30 animate-ping-slow"></div>
+                            <div className="absolute inset-4 rounded-full border-2 border-medical-teal-500/20 animate-pulse"></div>
+                        </>
                     )}
-                    <div className="text-center">
-                        <Activity size={48} className={`mx-auto mb-2 ${isMeasuring ? 'text-medical-teal-500 animate-bounce' : 'text-slate-400'}`} />
-                        <h2 className="text-4xl font-bold">{isComplete ? breaths : timeLeft}</h2>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-hospital-blue-400'}`}>
-                            {isComplete ? 'Napas / menit' : (isMeasuring ? 'Detik tersisa' : 'Siap')}
-                        </p>
+
+                    {/* Central Content */}
+                    <div className="z-10 text-center flex flex-col items-center">
+                        {isMeasuring ? (
+                            <>
+                                <div className="flex items-end h-16 space-x-1 mb-4">
+                                    {/* Simulated Wave Bars */}
+                                    {[...Array(5)].map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className="w-2 bg-medical-teal-500 rounded-full animate-wave"
+                                            style={{
+                                                height: `${20 + Math.random() * 40}px`,
+                                                animationDelay: `${i * 0.1}s`
+                                            }}
+                                        ></div>
+                                    ))}
+                                </div>
+                                <h1 className="text-6xl font-bold tabular-nums tracking-tighter text-medical-teal-500">{timeLeft}</h1>
+                                <p className={`text-xs uppercase tracking-widest mt-2 font-semibold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Detik Tersisa</p>
+                            </>
+                        ) : (
+                            <>
+                                <Activity size={64} className={`mb-4 ${isDarkMode ? 'text-slate-600' : 'text-hospital-blue-200'}`} />
+                                <p className={`text-sm font-semibold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Siap Mengukur</p>
+                            </>
+                        )}
                     </div>
                 </div>
 
+                {/* Status / Instructions */}
                 {!isMeasuring && !isComplete && (
-                    <div className="text-center max-w-xs">
-                        <p className="mb-6 opacity-80">
-                            Berbaringlah dengan nyaman. Letakkan ponsel di dada Anda. Tekan mulai dan bernapaslah dengan normal selama 1 menit.
-                        </p>
-                        <div className="space-y-4">
-                            <Button onClick={startMeasurement} className="w-full">
-                                <Play className="mr-2 w-5 h-5" /> Mulai Pengukuran
-                            </Button>
-                            {/* Fallback for desktop */}
-                            <button onClick={simulateBreath} className="text-xs underline opacity-50 hover:opacity-100">
-                                Simulasi (Mode Desktop)
-                            </button>
+                    <div className="w-full max-w-sm space-y-6">
+                        {/* Steps Card */}
+                        <div className={`p-6 rounded-2xl border transition-colors ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-hospital-blue-100'}`}>
+                            <h3 className={`font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Instruksi Pengukuran</h3>
+                            <ul className="space-y-4">
+                                <li className="flex items-start gap-3">
+                                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">1</div>
+                                    <p className={`text-sm leading-snug ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Berbaring telentang di tempat yang nyaman dan tenang.</p>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">2</div>
+                                    <p className={`text-sm leading-snug ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Letakkan ponsel di tengah dada Anda (pastikan layar menghadap atas).</p>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">3</div>
+                                    <p className={`text-sm leading-snug ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Tekan tombol Mulai, lalu bernapas normal selama 60 detik.</p>
+                                </li>
+                            </ul>
                         </div>
+
+                        <Button onClick={startMeasurement} className="w-full py-4 text-lg shadow-lg shadow-medical-teal-500/20">
+                            <Play className="mr-2 w-5 h-5 fill-current" /> Mulai Pengukuran
+                        </Button>
+
+                        {/* Fallback for desktop */}
+                        <button onClick={simulateBreath} className="w-full text-center text-xs underline opacity-40 hover:opacity-100">
+                            Simulasi (Mode Desktop)
+                        </button>
                     </div>
                 )}
 
                 {isMeasuring && (
-                    <div className="text-center">
-                        <p className="animate-pulse">Mengukur...</p>
-                        <button onClick={finishMeasurement} className="mt-8 text-sm text-red-500 font-bold">Berhenti Lebih Awal</button>
+                    <div className="text-center w-full max-w-xs animate-fade-in">
+                        <div className={`p-4 rounded-xl mb-6 border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-blue-100'}`}>
+                            <p className={`text-xs font-mono mb-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>SENSOR MOTION DETECTED</p>
+                            <div className="flex justify-center gap-4 text-xs font-mono">
+                                <span className="text-red-400">X: {accParams.x.toFixed(2)}</span>
+                                <span className="text-green-400">Y: {accParams.y.toFixed(2)}</span>
+                                <span className="text-blue-400">Z: {accParams.z.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-hospital-blue-600'}`}>
+                            Bernapaslah dengan santai...
+                        </p>
+                        <Button variant="danger" onClick={finishMeasurement} className="w-full opacity-80 hover:opacity-100">
+                            Berhenti
+                        </Button>
                     </div>
                 )}
 

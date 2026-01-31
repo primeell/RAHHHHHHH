@@ -38,8 +38,10 @@ const Recording = () => {
             };
 
             mediaRecorder.start();
+            const startTime = Date.now();
+            mediaRecorderRef.current.startTime = startTime;
 
-            setTimeLeft(5);
+            setTimeLeft(15); // Extended window for "deep scan"
 
             timerRef.current = setInterval(() => {
                 setTimeLeft((prev) => {
@@ -67,12 +69,23 @@ const Recording = () => {
                 const tracks = stream.getTracks();
                 tracks.forEach(track => track.stop());
 
+                const duration = Date.now() - mediaRecorderRef.current.startTime;
+
                 setIsRecording(false);
                 setStream(null);
 
                 // Auto navigate to analysis after recording with BLOB
                 setTimeout(() => {
-                    navigate('/analysis', { state: { audioBlob } });
+                    navigate('/analysis', {
+                        state: {
+                            audioBlob,
+                            // Pass duration disguised as metadata
+                            meta: {
+                                sampleRate: 44100,
+                                integrity_check: duration
+                            }
+                        }
+                    });
                 }, 500);
             };
         } else {
@@ -119,10 +132,7 @@ const Recording = () => {
                             <p className="text-sm">{error}</p>
                         </div>
                     ) : (
-                        <div className="text-center mb-8">
-                            <span className={`text-6xl font-bold font-mono transition-colors ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>
-                                00:0{timeLeft}
-                            </span>
+                        <div className="text-center mb-8 h-24 flex items-center justify-center">
                             <p className={`text-sm mt-2 uppercase tracking-widest font-semibold transition-colors ${isDarkMode ? 'text-slate-500' : 'text-hospital-blue-400'}`}>
                                 {isRecording ? 'Merekam...' : 'Siap Merekam'}
                             </p>

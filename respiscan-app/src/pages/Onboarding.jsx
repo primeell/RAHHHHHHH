@@ -72,7 +72,7 @@ const Onboarding = () => {
                     >
                         <img src="/medical_robot.png" alt="Respi-Bot" className="w-32 h-32 object-contain drop-shadow-xl animate-bounce-slow" />
                     </button>
-                    <p className={`text-[10px] mt-2 font-bold uppercase tracking-widest opacity-60 ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Tap me for a fact!</p>
+                    <p className={`text-[10px] mt-2 font-bold uppercase tracking-widest opacity-60 ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Ketuk untuk fakta unik!</p>
                 </div>
 
                 <div className="text-center mb-8 bg-white/10 backdrop-blur-sm p-4 rounded-3xl border border-white/20">
@@ -80,7 +80,7 @@ const Onboarding = () => {
                         Hi! I'm Respi-Bot 👋
                     </h1>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-hospital-blue-700'}`}>
-                        I'm here to help you with your lung health screening.
+                        Saya hadir untuk membantu skrining kesehatan paru-paru Anda.
                     </p>
                 </div>
 

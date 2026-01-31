@@ -21,7 +21,8 @@ const Dashboard = () => {
         try {
             const saved = localStorage.getItem('respi_user');
             const initial = saved ? JSON.parse(saved) : { name: 'Guest' };
-            return { ...initial, healthScore: 85 };
+            // Defaults first, then spread saved data to allow overrides
+            return { name: 'Guest', healthScore: 20, ...initial };
         } catch (e) {
             console.error("Failed to parse user data:", e);
             return { name: 'Guest', healthScore: 85 };
@@ -80,15 +81,36 @@ const Dashboard = () => {
     }, [user.location]);
 
     // Mock Data
-    const trendsData = [
-        { name: 'Mon', score: 70 },
-        { name: 'Tue', score: 75 },
-        { name: 'Wed', score: 72 },
-        { name: 'Thu', score: 80 },
-        { name: 'Fri', score: 85 },
-        { name: 'Sat', score: 82 },
-        { name: 'Sun', score: 88 },
-    ];
+    // Dynamic Trends Data based on current Health Score (Risk Score)
+    const riskScore = user.healthScore || 20;
+    const isHighRisk = riskScore > 70;
+
+    // Generate mock history that trends towards the current score
+    const trendsData = React.useMemo(() => {
+        const data = [];
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+        let current = riskScore;
+        // Generate reverse from today
+        for (let i = 6; i >= 0; i--) {
+            // Add some random variance but keep trend
+            const variance = Math.random() * 20 - 10; // +/- 10
+            let score = current + variance;
+            // Clamp between 0 and 100
+            score = Math.max(0, Math.min(100, score));
+
+            data.unshift({ name: days[i], score: Math.round(score) });
+
+            // Move "current" slightly towards a neutral baseline for past days
+            // so it looks like it evolved to the current state
+            current = current + (Math.random() * 10 - 5);
+        }
+        // Force last point to match current score exactly
+        data[6].score = riskScore;
+        return data;
+    }, [riskScore]);
+
+    const chartColor = isHighRisk ? "#ef4444" : "#10b981"; // Red vs Emerald
 
 
 
@@ -110,14 +132,14 @@ const Dashboard = () => {
     };
 
     return (
-        <div className={`min-h-screen relative pb-32 overflow-hidden font-sans transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-hospital-blue-900'}`}>
+        <div className={`min-h-screen relative pb-32 overflow-hidden font-sans transition-colors duration-300 ${isDarkMode ? 'bg-hospital-blue-950' : 'bg-hospital-blue-900'}`}>
             <div
                 className="fixed inset-0 w-full h-full -z-20 bg-cover bg-center bg-no-repeat opacity-50"
                 style={{ backgroundImage: "url('/hospital-bg.png')" }}
             />
 
             {/* Dark Overlay to ensure readability */}
-            <div className={`fixed inset-0 w-full h-full -z-10 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900/90' : 'bg-hospital-blue-900/70'}`} />
+            <div className={`fixed inset-0 w-full h-full -z-10 transition-colors duration-300 ${isDarkMode ? 'bg-hospital-blue-950/90' : 'bg-hospital-blue-900/70'}`} />
 
             {/* Ambient Decorations */}
             <div className={`absolute top-[-10%] right-[-10%] w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse pointer-events-none transition-colors duration-700 ${isDarkMode ? 'bg-blue-600' : 'bg-cyan-400'}`}></div>
@@ -250,9 +272,9 @@ const Dashboard = () => {
                     className={`rounded-3xl p-6 shadow-sm border transition-colors duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}
                 >
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className={`font-bold transition-colors ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Tren Kesehatan Mingguan</h3>
+                        <h3 className={`font-bold transition-colors ${isDarkMode ? 'text-white' : 'text-hospital-blue-900'}`}>Riwayat Resiko TBC</h3>
                         <button className="text-xs text-hospital-blue-500 font-bold flex items-center">
-                            Detail <ChevronRight size={14} />
+                            7 Hari Terakhir <ChevronRight size={14} />
                         </button>
                     </div>
 
@@ -261,12 +283,12 @@ const Dashboard = () => {
                             <AreaChart data={trendsData}>
                                 <defs>
                                     <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+                                        <stop offset="5%" stopColor={chartColor} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: isDarkMode ? '#64748b' : '#94a3b8' }} />
-                                <YAxis hide domain={[60, 100]} />
+                                <YAxis hide domain={[0, 100]} />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', backgroundColor: isDarkMode ? '#1e293b' : '#fff', color: isDarkMode ? '#fff' : '#000' }}
                                     cursor={{ stroke: isDarkMode ? '#334155' : '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
@@ -274,7 +296,7 @@ const Dashboard = () => {
                                 <Area
                                     type="monotone"
                                     dataKey="score"
-                                    stroke="#0ea5e9"
+                                    stroke={chartColor}
                                     strokeWidth={3}
                                     fillOpacity={1}
                                     fill="url(#colorScore)"

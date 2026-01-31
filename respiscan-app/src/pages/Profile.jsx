@@ -246,7 +246,7 @@ const Profile = () => {
                         <h2 className="text-2xl font-bold text-white w-full truncate text-left">
                             {formData.name || 'Guest User'}
                         </h2>
-                        <p className="text-hospital-blue-300 text-sm mb-3">Patient ID: #883921</p>
+
 
                         {/* Digital Clock */}
                         <div className="flex items-baseline gap-2">
